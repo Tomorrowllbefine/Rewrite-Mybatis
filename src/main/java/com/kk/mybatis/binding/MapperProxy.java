@@ -1,9 +1,10 @@
 package com.kk.mybatis.binding;
 
+import com.kk.mybatis.session.SqlSession;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 /**
  * 映射器代理类
@@ -14,10 +15,10 @@ import java.util.Map;
 public class MapperProxy<T> implements InvocationHandler, Serializable {
     private static final long serialVersionUID = -6424540398559729838L;
 
-    private Map<String, String> sqlSession;
+    private SqlSession sqlSession;
     private final Class<T> mapperInterface;
 
-    public MapperProxy(Map<String, String> sqlSession, Class<T> mapperInterface) {
+    public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface) {
         this.sqlSession = sqlSession;
         this.mapperInterface = mapperInterface;
     }
@@ -29,7 +30,9 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
             return method.invoke(this, args);
         }
         // 调用的是 Mapper 接口的方法（业务方法）， 则拦截调用，执行自定义逻辑
-        return "[代理逻辑]" + sqlSession.get(mapperInterface.getName() + "." + method.getName());
-
+        if (args == null || args.length == 0) {
+            return sqlSession.selectOne(method.getName());
+        }
+        return sqlSession.selectOne(method.getName(), args);
     }
 }
