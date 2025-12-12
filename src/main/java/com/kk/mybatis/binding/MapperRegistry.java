@@ -1,5 +1,6 @@
 package com.kk.mybatis.binding;
 
+import com.kk.mybatis.session.Configuration;
 import com.kk.mybatis.session.SqlSession;
 import cn.hutool.core.lang.ClassScanner;
 
@@ -14,6 +15,12 @@ import java.util.Set;
  * @since 2025/10/26
  **/
 public class MapperRegistry {
+
+    private Configuration configuration;
+
+    public MapperRegistry(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     // 已注册的Mapper映射
     private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new HashMap<>();
@@ -38,7 +45,7 @@ public class MapperRegistry {
         }
     }
 
-    private <T> void addMapper(Class<T> type) {
+    public <T> void addMapper(Class<T> type) {
         if (type.isInterface()) {
             if (hasMapper(type)) {
                 throw new RuntimeException("Type " + type + " is already known to the MapperRegistry.");
@@ -47,7 +54,7 @@ public class MapperRegistry {
         }
     }
 
-    private <T> boolean hasMapper(Class<T> type) {
+    public <T> boolean hasMapper(Class<T> type) {
         return knownMappers.containsKey(type);
     }
 
