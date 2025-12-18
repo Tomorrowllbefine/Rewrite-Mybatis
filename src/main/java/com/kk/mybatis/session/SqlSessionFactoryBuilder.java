@@ -39,7 +39,7 @@ public class SqlSessionFactoryBuilder {
         Configuration configuration = xmlConfigBuilder.parse();
         
         // 3. 使用解析得到的Configuration构建SqlSessionFactory
-        return new DefaultSqlSessionFactory(configuration);
+        return build(configuration);
     }
 
     /**
@@ -48,8 +48,7 @@ public class SqlSessionFactoryBuilder {
      *
      * @return SqlSessionFactory实例
      */
-    public SqlSessionFactory build() {
-        // TODO: 实现其他构建方式
-        return null;
+    public SqlSessionFactory build(Configuration configuration) {
+        return new DefaultSqlSessionFactory(configuration);
     }
 }

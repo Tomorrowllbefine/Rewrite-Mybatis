@@ -2,6 +2,7 @@ package com.kk.mybatis.binding;
 
 import com.kk.mybatis.binding.dao.ISchoolDao;
 import com.kk.mybatis.binding.dao.IUserDao;
+import com.kk.mybatis.mapping.MappedStatement;
 import com.kk.mybatis.session.Configuration;
 import com.kk.mybatis.session.SqlSession;
 import com.kk.mybatis.session.SqlSessionFactory;
@@ -15,32 +16,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collection;
 
 public class ApiTest {
 
     private Logger logger = LoggerFactory.getLogger(ApiTest.class);
 
-//    @Test
-//    public void test_MapperProxyFactory() {
-//        // 注册
-//        Configuration configuration = new Configuration();
-//        configuration.addMappers("com.kk.mybatis.binding.dao");
-//
-//        // 从SqlSession工厂中获取SqlSession
-//        SqlSessionFactory sqlSessionFactory = new DefaultSqlSessionFactory(configuration);
-//        SqlSession sqlSession = sqlSessionFactory.openSession();
-//
-//        // 获取Mapper
-//        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
-//        ISchoolDao schoolDao = sqlSession.getMapper(ISchoolDao.class);
-//
-//        // 测试
-//        String userName = userDao.queryUserName("10001");
-//        logger.info("测试结果：{}", userName);
-//
-//        String schoolList = schoolDao.querySchoolNamesStr();
-//        logger.info("测试结果：{}", schoolList);
-//    }
+    @Test
+    public void test_MapperProxyFactory() {
+        // 注册
+        Configuration configuration = new Configuration();
+        configuration.addMappers("com.kk.mybatis.binding.dao");
+
+        // 从SqlSession工厂中获取SqlSession
+        SqlSessionFactory sqlSessionFactory = new DefaultSqlSessionFactory(configuration);
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+
+        // 获取Mapper
+        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        ISchoolDao schoolDao = sqlSession.getMapper(ISchoolDao.class);
+
+        // 测试
+        String userName = userDao.queryUserName("10001");
+        logger.info("测试结果：{}", userName);
+
+        String schoolList = schoolDao.querySchoolNamesStr();
+        logger.info("测试结果：{}", schoolList);
+    }
 
     /**
      * 测试使用XML配置的方式构建SqlSessionFactory
@@ -65,13 +67,24 @@ public class ApiTest {
 
         // 4. 获取Mapper
         IUserDao userDao = sqlSession.getMapper(IUserDao.class);
-        ISchoolDao schoolDao = sqlSession.getMapper(ISchoolDao.class);
+//        ISchoolDao schoolDao = sqlSession.getMapper(ISchoolDao.class);
 
         // 5. 测试
         String userName = userDao.queryUserName("10001");
         logger.info("测试结果：{}", userName);
 
-        String schoolList = schoolDao.querySchoolNamesStr();
-        logger.info("测试结果：{}", schoolList);
+//        String schoolList = schoolDao.querySchoolNamesStr();
+//        logger.info("测试结果：{}", schoolList);
+        
+        // 6. 验证MappedStatement是否正确注册
+//        Configuration configuration = ((DefaultSqlSessionFactory) sqlSessionFactory).getConfiguration();
+//        Collection<MappedStatement> mappedStatements = configuration.getMappedStatements();
+//        logger.info("MappedStatements数量: {}", mappedStatements.size());
+//        for (MappedStatement mappedStatement : mappedStatements) {
+//            logger.info("MappedStatement ID: {}, SQL: {}, Type: {}",
+//                       mappedStatement.getId(),
+//                       mappedStatement.getSql(),
+//                       mappedStatement.getSqlCommandType());
+//        }
     }
 }

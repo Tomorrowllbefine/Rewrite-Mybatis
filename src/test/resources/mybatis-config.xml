@@ -4,6 +4,7 @@
 
 <configuration>
     <mappers>
-        <package name="com.kk.mybatis.binding.dao"/>
+        <mapper resource="mapper/UserMapper.xml"/>
+        <mapper resource="mapper/SchoolMapper.xml"/>
     </mappers>
 </configuration>

@@ -1,16 +1,19 @@
 package com.kk.mybatis.builder.xml;
 
-import java.io.Reader;
-import java.util.regex.Pattern;
-
+import com.kk.mybatis.builder.BaseBuilder;
+import com.kk.mybatis.io.Resources;
+import com.kk.mybatis.mapping.MappedStatement;
+import com.kk.mybatis.mapping.SqlCommandType;
+import com.kk.mybatis.session.Configuration;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.xml.sax.InputSource;
 
-import com.kk.mybatis.builder.BaseBuilder;
-import com.kk.mybatis.session.Configuration;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
 /**
  * XML配置构建器
@@ -53,6 +56,7 @@ public class XMLConfigBuilder extends BaseBuilder {
      * 支持以下格式：
      * <mappers>
      *   <package name="com.kk.mybatis.binding.dao"/>
+     *   <mapper resource="mapper/UserMapper.xml"/>
      * </mappers>
      *
      * @param mappersElement mappers节点元素
@@ -75,9 +79,94 @@ public class XMLConfigBuilder extends BaseBuilder {
                     configuration.addMappers(packageName);
                 }
             }
-            // 后续可以添加对<mapper>元素的支持，例如：
-            // <mapper resource="xx/xxMapper.xml"/>
-            // <mapper class="xx.xxMapper"/>
+            // 处理<mapper>元素
+            else if ("mapper".equals(element.getName())) {
+                // 获取resource属性值，即Mapper XML文件路径
+                String resource = element.attributeValue("resource");
+                if (resource != null && !resource.isEmpty()) {
+                    // 解析Mapper XML文件
+                    try {
+                        parseMapperXml(resource);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 解析Mapper XML文件
+     *
+     * @param resource Mapper XML文件路径
+     * @throws DocumentException 
+     * @throws IOException 
+     */
+    private void parseMapperXml(String resource) throws DocumentException, IOException, ClassNotFoundException {
+        // 加载Mapper XML文件
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resource);
+        if (inputStream == null) {
+            throw new RuntimeException("Cannot find mapper resource: " + resource);
+        }
+
+        // 解析XML
+        SAXReader saxReader = new SAXReader();
+        Document document = saxReader.read(inputStream);
+        Element rootElement = document.getRootElement();
+
+        // 获取namespace，通常是Mapper接口的全限定名
+        String namespace = rootElement.attributeValue("namespace");
+        if (namespace == null || namespace.isEmpty()) {
+            throw new RuntimeException("Mapper XML must have a namespace: " + resource);
+        }
+
+        // 遍历所有SQL语句节点
+        for (Object elementObj : rootElement.elements()) {
+            Element element = (Element) elementObj;
+            
+            // 支持常见的SQL标签
+            SqlCommandType sqlCommandType = getSqlCommandType(element.getName());
+            if (sqlCommandType != SqlCommandType.UNKNOWN) {
+                // 获取SQL语句ID
+                String id = element.attributeValue("id");
+                if (id == null || id.isEmpty()) {
+                    continue;
+                }
+
+                // 组合完整的statementId (namespace + "." + id)
+                String statementId = namespace + "." + id;
+                
+                // 获取SQL语句内容
+                String sql = element.getTextTrim();
+                
+                // 创建MappedStatement并注册到Configuration中
+                MappedStatement mappedStatement = new MappedStatement(statementId, sql, sqlCommandType);
+                configuration.addMappedStatement(mappedStatement);
+            }
+        }
+
+        // 注册Mapper
+        configuration.addMapper(Resources.classForName(namespace));
+    }
+
+    /**
+     * 根据标签名称获取SQL命令类型
+     *
+     * @param tagName 标签名称
+     * @return SQL命令类型
+     */
+    private SqlCommandType getSqlCommandType(String tagName) {
+        switch (tagName.toLowerCase()) {
+            case "select":
+                return SqlCommandType.SELECT;
+            case "insert":
+                return SqlCommandType.INSERT;
+            case "update":
+                return SqlCommandType.UPDATE;
+            case "delete":
+                return SqlCommandType.DELETE;
+            default:
+                return SqlCommandType.UNKNOWN;
         }
     }
 }

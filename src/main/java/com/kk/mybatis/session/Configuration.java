@@ -1,5 +1,6 @@
 package com.kk.mybatis.session;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,4 +47,31 @@ public class Configuration {
         return mapperRegistry;
     }
 
+    /**
+     * 添加MappedStatement
+     *
+     * @param mappedStatement MappedStatement对象
+     */
+    public void addMappedStatement(MappedStatement mappedStatement) {
+        mappedStatements.put(mappedStatement.getId(), mappedStatement);
+    }
+
+    /**
+     * 根据ID获取MappedStatement
+     *
+     * @param id MappedStatement的ID
+     * @return MappedStatement对象
+     */
+    public MappedStatement getMappedStatement(String id) {
+        return mappedStatements.get(id);
+    }
+
+    /**
+     * 获取所有MappedStatement
+     *
+     * @return MappedStatement集合
+     */
+    public Collection<MappedStatement> getMappedStatements() {
+        return mappedStatements.values();
+    }
 }
