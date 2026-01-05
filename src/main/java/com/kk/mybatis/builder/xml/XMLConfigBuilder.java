@@ -99,8 +99,6 @@ public class XMLConfigBuilder extends BaseBuilder {
      * 解析Mapper XML文件
      *
      * @param resource Mapper XML文件路径
-     * @throws DocumentException 
-     * @throws IOException 
      */
     private void parseMapperXml(String resource) throws DocumentException, IOException, ClassNotFoundException {
         // 加载Mapper XML文件
@@ -123,7 +121,10 @@ public class XMLConfigBuilder extends BaseBuilder {
         // 遍历所有SQL语句节点
         for (Object elementObj : rootElement.elements()) {
             Element element = (Element) elementObj;
-            
+
+            String parameterType = element.attributeValue("parameterType");
+            String resultType = element.attributeValue("resultType");
+
             // 支持常见的SQL标签
             SqlCommandType sqlCommandType = getSqlCommandType(element.getName());
             if (sqlCommandType != SqlCommandType.UNKNOWN) {
@@ -140,7 +141,7 @@ public class XMLConfigBuilder extends BaseBuilder {
                 String sql = element.getTextTrim();
                 
                 // 创建MappedStatement并注册到Configuration中
-                MappedStatement mappedStatement = new MappedStatement(statementId, sql, sqlCommandType);
+                MappedStatement mappedStatement = new MappedStatement.Builder(configuration, statementId, sqlCommandType, parameterType, resultType, sql).build();
                 configuration.addMappedStatement(mappedStatement);
             }
         }

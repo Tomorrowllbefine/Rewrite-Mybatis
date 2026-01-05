@@ -1,6 +1,7 @@
 package com.kk.mybatis.session.defaults;
 
 import com.kk.mybatis.binding.MapperRegistry;
+import com.kk.mybatis.mapping.MappedStatement;
 import com.kk.mybatis.session.Configuration;
 import com.kk.mybatis.session.SqlSession;
 
@@ -28,13 +29,20 @@ public class DefaultSqlSession implements SqlSession {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T selectOne(String statement) {
-        return (T) ("代理逻辑" + statement);
+        MappedStatement mappedStatement = configuration.getMappedStatement(statement);
+        return (T) ("代理逻辑" + statement + ",\n待执行sql: " + mappedStatement.getSql());
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> T selectOne(String statement, Object parameter) {
-        T result = (T) ("代理逻辑, 方法: " + statement + ", 入参: " + Arrays.toString((Object[]) parameter));
+        MappedStatement mappedStatement = configuration.getMappedStatement(statement);
+        T result = (T) ("代理逻辑, 方法: " + statement + ", 入参: " + Arrays.toString((Object[]) parameter) + ",\n待执行sql: " + mappedStatement.getSql());
         return result;
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
     }
 }

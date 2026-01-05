@@ -7,6 +7,7 @@ import com.kk.mybatis.session.Configuration;
 import com.kk.mybatis.session.SqlSession;
 import com.kk.mybatis.session.SqlSessionFactory;
 import com.kk.mybatis.session.SqlSessionFactoryBuilder;
+import com.kk.mybatis.session.defaults.DefaultSqlSession;
 import com.kk.mybatis.session.defaults.DefaultSqlSessionFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -77,14 +78,14 @@ public class ApiTest {
 //        logger.info("测试结果：{}", schoolList);
         
         // 6. 验证MappedStatement是否正确注册
-//        Configuration configuration = ((DefaultSqlSessionFactory) sqlSessionFactory).getConfiguration();
-//        Collection<MappedStatement> mappedStatements = configuration.getMappedStatements();
-//        logger.info("MappedStatements数量: {}", mappedStatements.size());
-//        for (MappedStatement mappedStatement : mappedStatements) {
-//            logger.info("MappedStatement ID: {}, SQL: {}, Type: {}",
-//                       mappedStatement.getId(),
-//                       mappedStatement.getSql(),
-//                       mappedStatement.getSqlCommandType());
-//        }
+        Configuration configuration = ((DefaultSqlSession) sqlSession).getConfiguration();
+        Collection<MappedStatement> mappedStatements = configuration.getMappedStatements();
+        logger.info("MappedStatements数量: {}", mappedStatements.size());
+        for (MappedStatement mappedStatement : mappedStatements) {
+            logger.info("MappedStatement ID: {}, SQL: {}, Type: {}",
+                       mappedStatement.getId(),
+                       mappedStatement.getSql(),
+                       mappedStatement.getSqlCommandType());
+        }
     }
 }

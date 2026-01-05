@@ -33,4 +33,6 @@ public interface SqlSession {
      * @return 封装对象
      **/
     <T> T selectOne(String statement, Object parameter);
+
+    Configuration getConfiguration();
 }

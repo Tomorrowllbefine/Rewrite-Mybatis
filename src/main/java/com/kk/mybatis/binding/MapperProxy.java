@@ -5,6 +5,7 @@ import com.kk.mybatis.session.SqlSession;
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * 映射器代理类
@@ -17,10 +18,12 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
 
     private SqlSession sqlSession;
     private final Class<T> mapperInterface;
+    private Map<Method, MapperMethod> methodCache;
 
-    public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface) {
+    public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethod> methodCache) {
         this.sqlSession = sqlSession;
         this.mapperInterface = mapperInterface;
+        this.methodCache = methodCache;
     }
 
     @Override
@@ -29,10 +32,18 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
         if (Object.class.equals(method.getDeclaringClass())) {
             return method.invoke(this, args);
         }
+
         // 调用的是 Mapper 接口的方法（业务方法）， 则拦截调用，执行自定义逻辑
-        if (args == null || args.length == 0) {
-            return sqlSession.selectOne(method.getName());
+        MapperMethod mapperMethod = cacheMapperMethod(method);
+        return mapperMethod.execute(sqlSession, args);
+    }
+
+    private MapperMethod cacheMapperMethod(Method method) {
+        MapperMethod mapperMethod = methodCache.get(method);
+        if (mapperMethod == null) {
+            mapperMethod = new MapperMethod(mapperInterface, method, sqlSession.getConfiguration());
+            methodCache.put(method, mapperMethod);
         }
-        return sqlSession.selectOne(method.getName(), args);
+        return mapperMethod;
     }
 }
