@@ -1,6 +1,7 @@
 package com.kk.mybatis.type;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ public class TypeAliasRegistry {
         registerAlias("double", Double.class);
         registerAlias("float", Float.class);
         registerAlias("boolean", Boolean.class);
+        registerAlias("list", List.class);
     }
 
 

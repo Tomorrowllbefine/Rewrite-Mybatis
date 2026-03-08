@@ -1,7 +1,9 @@
 package com.kk.mybatis.binding;
 
+import com.alibaba.fastjson.JSON;
 import com.kk.mybatis.binding.dao.ISchoolDao;
 import com.kk.mybatis.binding.dao.IUserDao;
+import com.kk.mybatis.builder.xml.XMLConfigBuilder;
 import com.kk.mybatis.mapping.MappedStatement;
 import com.kk.mybatis.session.Configuration;
 import com.kk.mybatis.session.SqlSession;
@@ -84,8 +86,28 @@ public class ApiTest {
         for (MappedStatement mappedStatement : mappedStatements) {
             logger.info("MappedStatement ID: {}, SQL: {}, Type: {}",
                        mappedStatement.getId(),
-                       mappedStatement.getSql(),
+                       mappedStatement.getBoundSql().getSql(),
                        mappedStatement.getSqlCommandType());
         }
+    }
+
+    @Test
+    public void test_selectOne() throws IOException {
+        // 1. 加载XML配置文件
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("mybatis-config.xml");
+        Reader reader = new InputStreamReader(inputStream);
+
+        // 2. 使用SqlSessionFactoryBuilder构建SqlSessionFactory
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(reader);
+
+        // 3. 获取SqlSession
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+
+        // 执行查询：默认是一个集合参数
+        Object[] req = {1L};
+        Object res = sqlSession.selectOne("com.kk.mybatis.binding.dao.IUserDao.queryById", req);
+
+        logger.info("测试结果：{}", JSON.toJSONString(res));
     }
 }

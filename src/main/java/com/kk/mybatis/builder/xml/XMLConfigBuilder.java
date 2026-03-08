@@ -2,6 +2,7 @@ package com.kk.mybatis.builder.xml;
 
 import com.kk.mybatis.builder.BaseBuilder;
 import com.kk.mybatis.io.Resources;
+import com.kk.mybatis.mapping.BoundSql;
 import com.kk.mybatis.mapping.Environment;
 import com.kk.mybatis.mapping.MappedStatement;
 import com.kk.mybatis.mapping.SqlCommandType;
@@ -17,8 +18,12 @@ import org.xml.sax.InputSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * XML 配置构建器
@@ -276,14 +281,23 @@ public class XMLConfigBuilder extends BaseBuilder {
                     // 获取 SQL 语句内容
                     String sql = element.getTextTrim();
 
+                    // 解析参数占位符?
+                    Map<Integer, String> parameter = new HashMap<>();
+                    Pattern pattern = Pattern.compile("(#\\{(.*?)})");
+                    Matcher matcher = pattern.matcher(sql);
+                    for (int i = 1; matcher.find(); i++) {
+                        parameter.put(i, matcher.group(2));
+                        sql = sql.replace(matcher.group(1), "?");
+                    }
+
+                    BoundSql boundSql = new BoundSql(sql, parameterType, resultType, parameter);
+
                     // 创建 MappedStatement 并注册到 Configuration
                     MappedStatement mappedStatement = new MappedStatement.Builder(
                             configuration,
                             statementId,
                             sqlCommandType,
-                            parameterType,
-                            resultType,
-                            sql
+                            boundSql
                     ).build();
                     configuration.addMappedStatement(mappedStatement);
                 }
